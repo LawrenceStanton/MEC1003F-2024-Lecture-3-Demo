@@ -27,3 +27,5 @@ fp-info-cache
 # Exported BOM files
 *.xml
 *.csv
+.DS_Store
+~MEC1003F 2024 Lecture 3 Demo.kicad_sch.lck

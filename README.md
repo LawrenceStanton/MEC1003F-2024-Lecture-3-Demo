@@ -1,62 +1,70 @@
-# MEC1003F Lecture 2 Demo
+# MEC1003F Lecture 3 Demo
 
-KiCad Demonstration Project for UCT MEC1003F 2024
+KiCad Demonstration Project for UCT MEC1003F 2024.
 
 ## Lesson Plan
 
-In this lecture you will use this demo project to learn how to create footprints, layout a PCB, and route traces and vias to make some basic connections between components.
+In this lecture we will continue from the previous project's schematic. In the last lecture we made some footprints and assigned them to the schematic components. In the assignment we also added a voltage regulator to the same circuit. Either project can continue to be used for this lecture, but this project will be used as the reference.
+
+The lecture will also contain a fair bit of information on the PCB manufacturing process, which is not detailed in this project.
 
 ## Overview
 
-Open the KiCad project file [MEC1003F-2024-Lecture-2-Demo.kicad_pro](MEC1003F-2024-Lecture-2-Demo.kicad_pro) in KiCad and check out the schematic. You should recognise a familiar AP331A comparator with some passive components! Again, this is not about the circuit design, but for those curious the first comparator circuit is a simple relaxation oscillator, while the second is simple hysteresis comparator which translates the output to another voltage level.
+This project retains the original project structure as previously used. The main project [MEC1003F 2024 Lecture 3 Demo.kicad_pro](MEC1003F%202024%20Lecture%203%20Demo.kicad_pro) contains:
 
-The operation of the circuit isn't that important, for us it is simply two IC components with a bunch of passives we can use as practice for layout and routing.
+- A single Schematic file [MEC1003F 2024 Lecture 3 Demo.kicad_sch](MEC1003F%202024%20Lecture%203%20Demo.kicad_sch).
+- A single PCB file [MEC1003F 2024 Lecture 3 Demo.kicad_pcb](MEC1003F%202024%20Lecture%203%20Demo.kicad_pcb).
+- A project symbols library [Project Symbols.kicad_sym](Project%20Symbols.kicad_sym).
+- A project footprints library [Project Footprints.pretty](Project%20Footprints.pretty).
 
-Although the schematic looks complete, the components aren't quite ready for layout. And so we begin!
+Today we are going to focus on the PCB file.
 
 ## PCB Information
 
-Before we can dive right into it we must first learn a bit more about PCBs and how they are modelled in EDA tools like KiCad. Pay attention in lecture as we explain the following key things:
+Before we start laying out routing the PCB, we must learn a bit about how PCBs are made in order to understand the limitations our design must adhere to. The first bif of the lecture will cover this.
 
-- **Layer Stackup**: The PCB is made up of multiple layers, each with a specific purpose. Each of these layers is modelled as either 2D layers or other properties of the PCB file.
-- **Technical vs User Layers**: Some layers in KiCad are simply for human reference, while others are used for specific purposes like copper, the board outline, solder mask, and silkscreen.
-- **Courtyards and Spacing**: Components cannot be placed too close together, and so we most often draw a courtyard around the component to show the minimum spacing required.
+## PCB Layout & Routing
 
-## Footprints
+Now that we are familiar with the PCB manufacturing process, we can start doing something! Today we will over the following tasks:
 
-### Task 1: Crocodile Pad
+### Task 1: Design Rules
 
-Most circuits need a way to connect to the outside world. This is usually done with a connector, but for this demo we will use a simple crocodile clip pad. This is a simple through-hole pad with copper on each side which can be used to bite down onto with a crocodile clip.
+Before we start routing, we need to set up the design rules. This is done in the `Design Rules` section under the `File > Board Setup` menu. The design rules are the constraints that the PCB layout must adhere to in order to be manufacturable. The design rules are set by the manufacturer and are usually available on their website. We must translate these rules into KiCad's design rules.
 
-In the lecture we will explain how to create a new footprint for this pad and then update the symbol.
+For this lecture we will follow the design rules of [JLCPCB](https://jlcpcb.com/). The design rules are available at [https://jlcpcb.com/capabilities/Capabilities](https://jlcpcb.com/capabilities/Capabilities).
 
-### Task 2: Comparator
+In the lecture I will walk the class through this. It is not a 1:1 translation! The manufacturer capabilities are the absolute limit, and it is good engineering practice to give some margin on these specs. For example, the minimum trace width is 0.127mm, but we will use 0.30mm. You must use your judgement based on the design requirements, the manufacturer's capabilities, and the sensitivity of these specifications when setting the design rules.
 
-Like the crocodile pad, the comparator footprint is not assigned. However, this is a bit more complicated as the footprint is a SOT-23-5 which is specified in the datasheet.
+### Task 2: Board Outline
 
-In the lecture we will demonstrate how we might go about creating a new footprint per the specification.
+The board outline is the physical boundary of the PCB. In KiCad the board outline is set in the `Edge.Cuts` layer with a simple closed path using the drawing tools. For this demo there is no requirements for a complex shape, and for the amount of components we have, a simple 30x30mm square will suffice.
 
-### Task 3: Passive Components
+Place a board outline by using the rectangle drawing tool in the `Edge.Cuts` layer.
 
-Some of the passive components are also not assigned. Although we could create new footprints for these.. these are just simple chip components. Assuming they are close enough, we will instead use the existing footprints from the KiCad standard library to save some time.
+### Task 3: Component Placement
 
-## PCB & Layout
+In the demo project I did some component placement already for half the circuit. It is hard to really teach component placement, it's very much subjective and there's a degree of style to it, especially when there are no electromagnetic or thermal requirements. But there are some general guidelines:
 
-Once we have all the footprints assigned, we can start the PCB layout. This is where we will place the components and route the traces to make the connections.
+- Set as high a grid scale as possible for the components you are placing. This makes it easier to align and stop worrying about exact locations.
+- Hide the silkscreen and other unnecessary layers. Those are secondary concerns to be dealt with later.
+- Place the things which must be at a particular location first. This mostly means connectors and mechanical mounting holes. Easy enough. As for the rest...
+- Orient passive components around the central component (usually some integrated circuit) that they are supporting. This brings a logical grouping to the components, like how the schematic would have been drawn. Do this to the side in free space - do not consider the rest of the board yet. Just focus on this group of components fitting well with each other. Repeat for each group of components.
+- Place passive components in rows along the face of the IC. It looks right and simplifies things. Don't try overcomplicating the layout - there is likely to be zero functional benefit.
+- Don't route the components yet. Just place them, or only route obvious and short connections. It becomes harder to move components once they are routed. The rats nest lines will rather show you if the routing will be simple with the layout until you're ready to go.
+- Use vias sparingly, but use them. They don't add any cost, the main impact is the space they take up. At a certain point that space is worth it though over long meandering traces.
+- All power and ground nets, just route to a quick via. Drop it to the bottom later and move on. GND will connect to a ground plane and power we'll deal with later.
+- A good rule of thumb is to set a trace with that us 60-80% of the pad width you're starting from. It looks good, and if the trace needed to be thicker then probably the pad would be bigger too. Only increase the trace width along the track length if you have a reason, like if it is a long trace.
+- Polygons can be used for power planes, but while we only have a 2 layer board without any high power components we can simply route power like any other trace. You can use power plane polygons when you have more layers and more complex power delivery requirements.
+- Once a subcircuit is laid out and routed, move that group can be considered a unit and placed on the board space accordingly. With a bigger shape it will be more obvious to see which orientation and location is best.
 
-Follow the instructions in lecture to update the PCB with the schematic components, and then place and route the components.
+It is a long process and the only way to do it quickly is with some practise. For this assignment, simply layout, route, delete and repeat until you are happy with your speed and the result.
 
-This is a very hard task to explain in words, and practise is the only way to get the grip of layout & routing, but with some tips and tricks you should be able to get a good start.
+### Task 4: Gerber Files
 
-### Key PCB Elements
-
-While routing the PCB, pay attention to learn how to place the following key elements:
-
-- **Board Outline**: The outline of the PCB is important to define the shape of the board. This is usually drawn on the Edge.Cuts layer.
-- **Traces**: The most important part of the PCB is the copper traces which connect the components. These are drawn on the Copper layers.
-- **Vias**: To connect traces on different layers, we use vias. These are plated holes which connect the copper on different layers.
-- **Copper Pours**: Sometimes we need to fill an area with copper, either to provide a ground plane, make a heatsink, or just to make a non-uniform trace. This is done with a copper pour or "filled zone".
+The final task in this lecture is to generate the Gerber files. These are the files that the PCB manufacturer will use to make the PCB.
 
 ## Next Lecture
 
-In this lecture we were just focusing on getting things onto the PCB and how to route them. In the next lecture we will focus on the design rules and how to check that the PCB is manufacturable. We'll also go a step further and consider some of the specific requirements for JLCPCB, the PCB manufacturer we will be using most often.
+That is the end of this course's core content! You should now know how to make a simple PCB from start to finish. The next lecture is dedicated to preparation for the class test, where I will demonstrate what you will be asked to do under test conditions.
+
+I'll do this test demo in less than the allocated time, so I'll also show you some of the things I skipped over earlier, like the Electric Rules Checker and multipart symbols, which are good to know but not essential for the test. I'll also show what is needed for automatic assembly for JLCPCB, which requires some extra information to be added to the Bill of Materials and Pick n Place files.
